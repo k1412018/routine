@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4f9ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ルーティン | routine v0.7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#f7fbff; --bg2:#e9f2fc;
+  --ink:#1e3a5f; --ink-soft:#5f7ba0;
+  --accent:#2f6fed; --accent-soft:#dcebff;
+  --card:#ffffff; --line:#dbe7f5;
+  --ring-track:#dbe7f5;
+  --radius:22px;
+  --shadow:0 6px 24px rgba(47,111,237,.08);
+}
+body.theme-night{
+  --bg1:#0e1c30; --bg2:#17293f;
+  --ink:#e8f0fd; --ink-soft:#93a9c9;
+  --accent:#8ab2ff; --accent-soft:#233a58;
+  --card:#1a2d46; --line:#2b415f;
+  --ring-track:#2b415f;
+  --shadow:0 6px 24px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif;
+  color:var(--ink);
+  background:linear-gradient(170deg,var(--bg1) 0%,var(--bg2) 100%) fixed;
+  min-height:100vh;
+  transition:background .6s,color .6s;
+  line-height:1.7;
+}
+body.theme-morning::before{
+  content:"";position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 78% -8%,rgba(255,225,150,.5),transparent 42%);
+}
+#app{max-width:480px;margin:0 auto;padding:28px 22px 48px;position:relative;min-height:100vh}
+.screen{display:none;animation:fadeUp .45s ease both}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+button{font-family:inherit}
+
+/* ---------- home ---------- */
+#home-date{font-size:13px;letter-spacing:.12em;color:var(--ink-soft);font-weight:500}
+#home-greeting{font-size:26px;font-weight:700;letter-spacing:.02em;margin:2px 0 12px}
+.chip{
+  font-size:12.5px;font-weight:700;color:var(--accent);
+  background:var(--accent-soft);border:none;border-radius:999px;
+  padding:8px 16px;cursor:pointer;margin-bottom:18px;
+}
+.chip.off{color:var(--ink-soft);background:var(--card);border:1px solid var(--line)}
+
+/* おやすみ画面 */
+#screen-sleep{text-align:center;padding-top:32vh;cursor:pointer;min-height:60vh}
+#sleep-moon{font-size:46px;margin-bottom:16px;animation:pop .6s ease both}
+#screen-sleep h2{font-size:22px;font-weight:700;letter-spacing:.1em}
+#screen-sleep p{font-size:13px;color:var(--ink-soft);margin-top:12px;line-height:2}
+.card{
+  position:relative;display:flex;align-items:center;gap:16px;width:100%;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 52px 18px 18px;margin-bottom:14px;cursor:pointer;
+  box-shadow:var(--shadow);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.card:active{transform:scale(.98)}
+@media(hover:hover){.card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(47,111,237,.14)}}
+.card .icon{
+  width:52px;height:52px;border-radius:16px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.icon-sun{background:linear-gradient(140deg,#fff3d6,#ffe3a8);color:#e8a020}
+.icon-sunrise{background:linear-gradient(140deg,#ffe9d9,#ffcfae);color:#e8702a}
+.icon-moon{background:linear-gradient(140deg,#1d3252,#2b4a77);color:#ffd98a}
+.icon-cloud{background:linear-gradient(140deg,#e0edff,#c8dfff);color:#2f6fed}
+.icon-leaf{background:linear-gradient(140deg,#e2f6e9,#c1ecd2);color:#2e9e5b}
+.icon-star{background:linear-gradient(140deg,#f3e8ff,#e2ccff);color:#8b5cf6}
+.icon-book{background:linear-gradient(140deg,#dff4f4,#c2e9e9);color:#12919b}
+.icon-zap{background:linear-gradient(140deg,#ffefd6,#ffdda8);color:#e88a20}
+.card-body{min-width:0}
+.card h2{font-size:17px;font-weight:700;letter-spacing:.02em}
+.card p{font-size:12.5px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .card-min{font-size:11.5px;color:var(--accent);font-weight:700;letter-spacing:.05em}
+.card-edit{
+  position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+  background:var(--bg1);color:var(--ink-soft);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.card-edit:active{transform:translateY(-50%) scale(.9)}
+.card-move{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:5px;
+}
+.card-move button{
+  width:32px;height:26px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg1);color:var(--accent);cursor:pointer;font-size:13px;font-weight:700;
+}
+.card-move button:disabled{opacity:.3}
+#home-actions{display:flex;gap:10px;margin-top:4px}
+#btn-add-routine{
+  flex:1;font-size:14px;font-weight:700;color:var(--accent);
+  background:none;border:2px dashed var(--line);border-radius:18px;
+  padding:14px 0;cursor:pointer;
+}
+#btn-reorder{
+  font-size:13px;font-weight:700;color:var(--ink-soft);
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:0 18px;cursor:pointer;
+}
+#btn-reorder.on{color:#fff;background:var(--accent);border-color:var(--accent)}
+.version{margin-top:26px;text-align:center;font-size:11px;color:var(--ink-soft);letter-spacing:.15em}
+
+/* ---------- step ---------- */
+.step-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+.ghost-btn{
+  background:none;border:none;font-size:13px;
+  color:var(--ink-soft);cursor:pointer;padding:6px 10px 6px 0;
+}
+#step-dots{display:flex;gap:7px}
+#step-dots span{width:8px;height:8px;border-radius:50%;background:var(--ring-track);transition:background .3s,transform .3s}
+#step-dots span.on{background:var(--accent);transform:scale(1.25)}
+#step-label{font-size:12px;letter-spacing:.22em;color:var(--accent);font-weight:700}
+#step-title{font-size:26px;font-weight:700;margin:4px 0 10px;letter-spacing:.02em}
+#step-guide{font-size:14.5px;color:var(--ink-soft);min-height:52px}
+#step-sound{font-size:11.5px;color:var(--ink-soft);letter-spacing:.08em;margin-top:2px}
+
+#step-stage{margin:22px 0 10px;display:flex;flex-direction:column;align-items:center;min-height:260px;justify-content:center}
+
+/* timer ring */
+#stage-timer{position:relative;display:none}
+#stage-timer svg{transform:rotate(-90deg);display:block}
+#ring-track{stroke:var(--ring-track)}
+#ring-bar{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+#time-text{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:46px;font-weight:500;letter-spacing:.04em;font-variant-numeric:tabular-nums;
+}
+
+/* labeling (書いて浄化) */
+#stage-label{display:none;width:100%;text-align:center}
+#label-count{font-size:14px;color:var(--ink-soft);margin-bottom:16px}
+#label-count strong{font-size:24px;color:var(--accent);font-weight:700}
+#purify-input{
+  width:100%;max-width:360px;font-family:inherit;font-size:15px;color:var(--ink);
+  background:var(--card);border:1.5px solid var(--line);border-radius:16px;
+  padding:15px 16px;outline:none;display:block;margin:0 auto;
+}
+#purify-input:focus{border-color:var(--accent)}
+#purify-input::placeholder{color:var(--ink-soft);opacity:.7}
+#purify-input.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#purify-text{
+  display:none;min-height:54px;width:100%;max-width:360px;margin:0 auto;
+  font-size:18px;font-weight:500;line-height:1.9;text-align:center;
+  word-break:break-all;padding:8px 4px;
+}
+.pchar{
+  display:inline-block;white-space:pre;max-width:1.5em;
+  transition:opacity .35s,transform .35s,max-width .4s .15s;
+}
+.pchar.gone{opacity:0;transform:translateY(-16px) scale(.5);max-width:0}
+.purify-done{font-size:15px;font-weight:700;color:var(--accent);display:inline-block;animation:pop .4s cubic-bezier(.34,1.56,.64,1) both}
+#purify-btn{
+  display:block;width:100%;max-width:360px;margin:16px auto 0;
+  font-size:16px;font-weight:700;color:#fff;letter-spacing:.08em;
+  background:var(--accent);border:none;border-radius:16px;
+  padding:16px 0;cursor:pointer;box-shadow:var(--shadow);
+  transition:transform .1s;
+}
+#purify-btn:active{transform:scale(.94)}
+body.theme-night #purify-btn{color:#0e1c30}
+#purify-hint{margin-top:10px;font-size:12px;color:var(--ink-soft);text-align:center}
+#label-time{margin-top:14px;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-align:center}
+.float-char{
+  position:fixed;font-size:16px;font-weight:700;color:var(--accent);
+  pointer-events:none;animation:floatAway 1.4s ease-out forwards;z-index:50;
+}
+@keyframes floatAway{
+  0%{opacity:1;transform:translate(0,0) scale(1);filter:blur(0)}
+  100%{opacity:0;transform:translate(var(--dx,0),-120px) scale(1.35);filter:blur(2px)}
+}
+
+/* breathing */
+#stage-breath{display:none;text-align:center}
+#breath-circle{
+  /* 最大1.42倍に膨らんでも上下の文字と重ならない余白（170px × 0.21 ≒ 36px） */
+  width:170px;height:170px;border-radius:50%;margin:40px auto 58px;
+  background:radial-gradient(circle at 35% 30%,var(--accent-soft),var(--accent));
+  opacity:.85;
+  animation:breathe 10s ease-in-out infinite;
+}
+@keyframes breathe{0%{transform:scale(1)}40%{transform:scale(1.42)}100%{transform:scale(1)}}
+#breath-phase{font-size:22px;font-weight:700;letter-spacing:.1em}
+#breath-cycle{font-size:13px;color:var(--ink-soft);margin-top:4px}
+
+/* text cards */
+#stage-cards{display:none;width:100%;text-align:center}
+#card-text{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);
+  min-height:150px;max-width:380px;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;font-weight:700;line-height:1.9;letter-spacing:.03em;
+  padding:22px 20px;
+  animation:cardIn .45s ease both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#card-pos{margin-top:12px;font-size:12px;letter-spacing:.25em;color:var(--accent);font-weight:700}
+#card-time{margin-top:2px;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+/* writing */
+#stage-write{display:none;width:100%;max-width:380px;margin:0 auto}
+.write-field{margin-bottom:12px}
+.write-field label{display:block;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.05em;margin-bottom:5px}
+.write-field textarea{
+  width:100%;font-family:inherit;font-size:14px;color:var(--ink);line-height:1.7;
+  background:var(--card);border:1.5px solid var(--line);border-radius:14px;
+  padding:12px 14px;outline:none;resize:none;
+}
+.write-field textarea:focus{border-color:var(--accent)}
+.write-field textarea::placeholder{color:var(--ink-soft);opacity:.6}
+#write-time{font-size:13px;color:var(--ink-soft);text-align:center;margin-top:4px;font-variant-numeric:tabular-nums}
+
+/* video */
+#stage-video{display:none;width:100%}
+.video-wrap{
+  position:relative;width:100%;padding-top:56.25%;
+  border-radius:18px;overflow:hidden;background:#000;
+  box-shadow:var(--shadow);
+}
+.video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#video-note{margin-top:14px;font-size:13px;color:var(--ink-soft);text-align:center;font-variant-numeric:tabular-nums}
+#video-fallback{margin-top:6px;font-size:12px;color:var(--ink-soft);text-align:center}
+#video-fallback a{color:var(--accent);font-weight:700}
+#video-error{
+  display:none;padding:40px 20px;text-align:center;font-size:14px;color:var(--ink-soft);
+  background:var(--card);border:1px dashed var(--line);border-radius:18px;
+}
+
+.controls{display:flex;gap:12px;margin-top:14px}
+.controls button{
+  flex:1;font-size:15px;font-weight:700;
+  border-radius:16px;padding:15px 0;cursor:pointer;letter-spacing:.05em;
+  transition:transform .12s;
+}
+.controls button:active{transform:scale(.97)}
+#btn-pause{background:var(--card);border:1.5px solid var(--line);color:var(--ink-soft)}
+#btn-skip{background:var(--accent);border:none;color:#fff}
+body.theme-night #btn-skip{color:#0e1c30}
+
+/* ---------- done ---------- */
+#screen-done{text-align:center;padding-top:60px}
+#done-icon{font-size:54px;margin-bottom:14px;animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+#done-title{font-size:24px;font-weight:700;margin-bottom:8px}
+#done-msg{font-size:14.5px;color:var(--ink-soft);margin-bottom:30px}
+.primary-btn{
+  font-size:15px;font-weight:700;color:#fff;
+  background:var(--accent);border:none;border-radius:16px;
+  padding:15px 48px;cursor:pointer;letter-spacing:.08em;
+}
+body.theme-night .primary-btn{color:#0e1c30}
+
+/* ---------- edit ---------- */
+#edit-title{
+  width:100%;font-family:inherit;font-size:20px;font-weight:700;color:var(--ink);
+  background:none;border:none;border-bottom:2px solid var(--line);
+  padding:6px 2px;margin-bottom:16px;outline:none;
+}
+#edit-title:focus{border-color:var(--accent)}
+.meta-block{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:14px;margin-bottom:16px;box-shadow:var(--shadow);
+}
+#icon-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.icon-pick{
+  width:44px;height:44px;border-radius:13px;border:2px solid transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
+}
+.icon-pick.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.estep{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:14px 14px 16px;margin-bottom:12px;box-shadow:var(--shadow);
+}
+.estep-head{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.estep-head .no{font-size:11px;letter-spacing:.18em;font-weight:700;color:var(--accent);margin-right:auto}
+.mini-btn{
+  width:30px;height:30px;border-radius:9px;border:1px solid var(--line);
+  background:var(--bg1);color:var(--ink-soft);cursor:pointer;font-size:14px;
+}
+.mini-btn:active{transform:scale(.9)}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:3px}
+.field input[type=text],.field input[type=url],.field textarea,.field select{
+  width:100%;font-family:inherit;font-size:14px;color:var(--ink);
+  background:var(--bg1);border:1px solid var(--line);border-radius:10px;
+  padding:9px 11px;outline:none;
+}
+.field textarea{resize:vertical;min-height:56px;line-height:1.6}
+.field :focus{border-color:var(--accent)}
+.field-row{display:flex;gap:10px}
+.field-row .field{flex:1}
+.dur-inputs{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-soft)}
+.dur-inputs input{
+  width:64px;font-family:inherit;font-size:14px;color:var(--ink);text-align:center;
+  background:var(--bg1);border:1px solid var(--line);border-radius:10px;padding:9px 6px;outline:none;
+}
+.hint{font-size:11.5px;color:var(--ink-soft);margin-top:4px}
+#edit-add{
+  width:100%;font-size:14px;font-weight:700;color:var(--accent);
+  background:none;border:2px dashed var(--line);border-radius:18px;
+  padding:14px 0;cursor:pointer;margin-bottom:18px;
+}
+#edit-save{width:100%}
+#edit-delete{
+  display:block;width:100%;margin-top:14px;
+  font-size:13px;font-weight:700;color:#d05555;
+  background:none;border:1.5px solid #e8c5c5;border-radius:16px;
+  padding:13px 0;cursor:pointer;
+}
+#edit-delete.arm{color:#fff;background:#d05555;border-color:#d05555}
+
+/* stars (night) */
+.star{position:fixed;z-index:-1;width:3px;height:3px;border-radius:50%;background:#cfe0ff;pointer-events:none;animation:twinkle 3s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01s !important;transition-duration:.01s !important}
+  #breath-circle{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- home -->
+  <section id="screen-home" class="screen active">
+    <header>
+      <p id="home-date"></p>
+      <h1 id="home-greeting"></h1>
+      <button id="btn-voice" class="chip">🎧 音声ガイド ON</button>
+    </header>
+    <div id="card-list"></div>
+    <div id="home-actions">
+      <button id="btn-add-routine">＋ ルーティンを追加</button>
+      <button id="btn-reorder">並べ替え</button>
+    </div>
+    <button id="btn-export-voice" class="ghost-btn" style="display:block;margin:16px auto 0">🎙 音声データ用テキストを書き出す</button>
+    <p class="version">ROUTINE v0.7</p>
+  </section>
+
+  <!-- step -->
+  <section id="screen-step" class="screen">
+    <div class="step-top">
+      <button id="btn-quit" class="ghost-btn">× やめる</button>
+      <div id="step-dots"></div>
+    </div>
+    <p id="step-label"></p>
+    <h2 id="step-title"></h2>
+    <p id="step-guide"></p>
+    <p id="step-sound"></p>
+
+    <div id="step-stage">
+      <div id="stage-timer">
+        <svg width="230" height="230" viewBox="0 0 230 230">
+          <circle id="ring-track" cx="115" cy="115" r="103" fill="none" stroke-width="7"/>
+          <circle id="ring-bar" cx="115" cy="115" r="103" fill="none" stroke-width="7"/>
+        </svg>
+        <div id="time-text">0:00</div>
+      </div>
+
+      <div id="stage-label">
+        <p id="label-count">手放した考え <strong>0</strong> 個</p>
+        <div id="purify-text" aria-live="polite"></div>
+        <input id="purify-input" type="text" maxlength="80" autocomplete="off"
+               placeholder="いま頭の中にあることを、そのまま書く">
+        <button id="purify-btn">✨ 浄化する</button>
+        <p id="purify-hint">書いたら「浄化する」を連打。文字と一緒に手放します</p>
+        <p id="label-time">のこり 2:00</p>
+      </div>
+
+      <div id="stage-breath">
+        <div id="breath-circle"></div>
+        <p id="breath-phase">吸って</p>
+        <p id="breath-cycle">あと 3 回</p>
+      </div>
+
+      <div id="stage-cards">
+        <div id="card-text"></div>
+        <p id="card-pos"></p>
+        <p id="card-time"></p>
+      </div>
+
+      <div id="stage-write">
+        <div class="write-field">
+          <label for="write-thanks">🌱 感謝していること（ひとつ）</label>
+          <textarea id="write-thanks" rows="2" placeholder="例：朝、静かにコーヒーを飲めた"></textarea>
+        </div>
+        <div class="write-field">
+          <label for="write-focus">🎯 今日の最優先事項（ひとつだけ）</label>
+          <textarea id="write-focus" rows="2" placeholder="例：ポートフォリオの1ページを仕上げる"></textarea>
+        </div>
+        <p id="write-time"></p>
+      </div>
+
+      <div id="stage-video">
+        <div class="video-wrap"><iframe id="yt-frame" title="ガイド動画" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
+        <p id="video-error">動画URLが読み取れませんでした。<br>編集画面でYouTubeのURLを確認してください。</p>
+        <p id="video-note"></p>
+        <p id="video-fallback">再生できないときは <a id="video-open" href="#" target="_blank" rel="noopener">YouTubeで開く ↗</a></p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="btn-pause">一時停止</button>
+      <button id="btn-skip">次へ →</button>
+    </div>
+  </section>
+
+  <!-- done -->
+  <section id="screen-done" class="screen">
+    <div id="done-icon">🌿</div>
+    <h2 id="done-title">おつかれさまでした</h2>
+    <p id="done-msg"></p>
+    <button id="btn-home" class="primary-btn">ホームへ</button>
+  </section>
+
+  <!-- sleep (おやすみ終了) -->
+  <section id="screen-sleep" class="screen">
+    <div id="sleep-moon">🌙</div>
+    <h2>おやすみなさい</h2>
+    <p>そのまま目を閉じてOK。<br>音はゆっくり小さくなって、画面もひとりでに眠ります。</p>
+  </section>
+
+  <!-- edit -->
+  <section id="screen-edit" class="screen">
+    <div class="step-top">
+      <button id="edit-cancel" class="ghost-btn">× 保存せず閉じる</button>
+      <button id="edit-reset" class="ghost-btn">最初にもどす</button>
+    </div>
+    <input id="edit-title" type="text" maxlength="20">
+    <div class="meta-block">
+      <div class="field">
+        <label>アイコン</label>
+        <div id="icon-row"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>画面の雰囲気</label>
+          <select id="edit-theme">
+            <option value="morning">あかるい朝</option>
+            <option value="">シンプル</option>
+            <option value="night">よるの星空</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>おわりかた</label>
+          <select id="edit-end">
+            <option value="chime">ふつう（チャイム）</option>
+            <option value="sleep">そのまま眠る</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>完了メッセージ</label>
+        <input id="edit-donemsg" type="text" maxlength="50" placeholder="おつかれさまでした">
+      </div>
+    </div>
+    <div id="edit-steps"></div>
+    <button id="edit-add">＋ ステップを追加</button>
+    <button id="edit-save" class="primary-btn">保存する</button>
+    <button id="edit-delete">このルーティンを削除</button>
+  </section>
+
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ===== アイコン・環境音の定義 ===== */
+const ICONS = {
+  sun: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  sunrise: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M8 6l4-4 4 4M4.9 10.9l1.4 1.4M2 18h2M20 18h2M17.7 12.3l1.4-1.4M16 18a4 4 0 0 0-8 0M2 22h20"/></svg>',
+  moon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+  cloud: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.9-8.6 6 6 0 1 0-11 3.2A3.5 3.5 0 0 0 6.5 19z"/></svg>',
+  leaf: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
+  star: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>',
+  book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+  zap: '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+};
+const ICON_EMOJI = { sun: "☀️", sunrise: "🌅", moon: "🌙", cloud: "🌿", leaf: "🌿", star: "⭐", book: "📖", zap: "⚡" };
+const PENCIL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>';
+const TYPE_NAMES = { timer: "タイマー", video: "YouTube動画", cards: "文章カード", write: "書き出しメモ", label: "書いて浄化", breath: "深呼吸ガイド" };
+const SOUND_NAMES = { "": "なし", rain: "雨", waves: "波", wind: "風", bowl: "クリスタルボウル", beat: "リズム（運動用）" };
+
+/* ===== 初期ルーティン（「最初にもどす」用のプリセット）===== */
+const PRESETS = [
+  {
+    id: "morning", title: "あさのルーティン", icon: "sun", theme: "morning",
+    doneMsg: "いいスタートです。きょうは「ひとつ」できたらOK。",
+    steps: [
+      { name: "沈黙のじかん", sec: 60, type: "timer",
+        guide: "目を閉じて、なにもしない1分。音・光・体の感覚を、ただ感じるだけでOKです。" },
+      { name: "ベッドの上ストレッチ", sec: 180, type: "cards", sound: "waves",
+        guide: "寝たままでOK。音声に合わせて、ゆっくり体を目覚めさせます。",
+        lines: [
+          "仰向けのまま両手を頭の上へ。手と足で、ぐーっと背伸び",
+          "両膝を抱えて、ゆらゆら。腰まわりをやさしくゆるめます",
+          "両膝を立てて左へパタン。顔は右へ。ゆっくり反対側も",
+          "最後にもう一度大きく伸びをして、起き上がる準備",
+        ] },
+      { name: "きょうの「ひとつ」", sec: 60, type: "timer",
+        guide: "「今日はこれができたらOK」をひとつだけ決めます。増やさないのがコツ。声に出すとさらに◎" },
+    ],
+  },
+  {
+    id: "miracle", title: "モーニングメソッド", icon: "sunrise", theme: "morning",
+    doneMsg: "6分でエンジン始動。今日のあなたはもう整っています。",
+    steps: [
+      { name: "沈黙", sec: 60, type: "timer",
+        guide: "スマホの他の画面は見ずに、目を閉じて深呼吸。静かな時間で心を落ち着かせます。" },
+      { name: "アファメーション", sec: 60, type: "cards",
+        guide: "画面の言葉を、声に出して読み上げます。自分に向かって、ゆっくりと。",
+        lines: [
+          "私は今日もできる",
+          "私には無限の可能性がある",
+          "私は自分のペースで、着実に進んでいる",
+          "小さな一歩が、未来を変えていく",
+        ] },
+      { name: "イメージング", sec: 60, type: "cards",
+        guide: "目を閉じてもOK。画面の問いに沿って、頭の中でできるだけ具体的に想像します。",
+        lines: [
+          "目標を達成した瞬間のあなたは、どこにいて、どんな表情をしていますか？",
+          "今日が最高の1日になったら、寝る前のあなたは何を思い出してニヤニヤしていますか？",
+          "半年後、理想の働き方をしている自分の「朝の風景」を思い浮かべてみます",
+        ] },
+      { name: "ライティング", sec: 60, type: "write",
+        guide: "感謝していることをひとつ。それから、今日の最優先事項をひとつだけ書きます。" },
+      { name: "リーディング", sec: 60, type: "cards",
+        guide: "短い文章を、ゆっくり2回読んでみてください。今日の視点がひとつ増えます。",
+        lines: [
+          "不安は、考えることでは消えない。小さく動いた瞬間に、少しずつ薄れていく。",
+          "「まだ足りない」と感じる日は、成長している日。止まっている人は、足りなさに気づかない。",
+          "昨日の自分より1mmでも前に出ていれば、今日はもう前進の日。",
+        ] },
+      { name: "ベッドストレッチ", sec: 60, type: "cards", sound: "bowl",
+        guide: "ベッドの上のまま、音声に合わせてゆっくり体をほぐします。",
+        lines: [
+          "仰向けで手足を伸ばして、大きく背伸び",
+          "両膝を抱えて、腰をやさしくゆるめる",
+          "膝を左右にゆっくり倒して、体をねじる",
+        ] },
+    ],
+  },
+  {
+    id: "night", title: "よるのルーティン", icon: "moon", theme: "night",
+    doneMsg: "今日もおつかれさまでした。あとは眠るだけ。",
+    end: "sleep",
+    steps: [
+      { name: "リセットそうじ", sec: 300, type: "timer",
+        guide: "完璧じゃなくて大丈夫。目についた場所を5分だけ。タイマーが鳴ったら途中でも終わりにします。" },
+      { name: "ベッドの上ストレッチ", sec: 180, type: "cards", sound: "waves",
+        guide: "ベッドに入って、寝たままできるストレッチで一日をほどきます。",
+        lines: [
+          "仰向けで両手を上へ、ぐーっと背伸びして、ふっと脱力",
+          "両膝を抱えて小さく丸まる。腰の伸びを感じて",
+          "膝を左右にゆっくり倒すツイスト。呼吸は止めずに",
+          "目を閉じて、体の重みをベッドに預けます",
+        ] },
+      { name: "瞑想", sec: 180, type: "timer", sound: "rain",
+        guide: "呼吸に意識を向けます。考えが浮かんだら「考えてるな」と気づいて呼吸に戻る。戻れたら、それで成功です。" },
+    ],
+  },
+  {
+    id: "reset", title: "考えすぎリセット", icon: "cloud", theme: "",
+    doneMsg: "考えは消さなくていい。距離がとれたら、それで十分です。",
+    steps: [
+      { name: "ながめる", sec: 60, type: "timer", sound: "waves",
+        guide: "考えを止めようとしなくてOK。空を流れる雲みたいに、浮かんでは消えていくのをただ眺めます。" },
+      { name: "書いて浄化", sec: 120, type: "label", sound: "rain",
+        guide: "頭の中にあることを、そのまま文字にして書き出します。書けたら「浄化する」を連打。文字が消えていくのと一緒に、考えを手放します。" },
+      { name: "深呼吸", sec: 30, type: "breath", sound: "waves",
+        guide: "4秒吸って、6秒かけて吐く。吐く息と一緒に、肩の力を抜きます。" },
+    ],
+  },
+];
+
+/* ===== 便利関数 ===== */
+const $ = (s) => document.querySelector(s);
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const todayKey = () => new Date().toLocaleDateString("sv");
+const newId = () => "r" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+function fmt(s) {
+  const t = Math.max(0, Math.ceil(s));
+  return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+}
+function ytId(url) {
+  const m = String(url || "").match(/(?:youtu\.be\/|v=|shorts\/|embed\/|live\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
+/* ===== ルーティン読み込み・保存 ===== */
+const OLD_LABEL_GUIDE = "考えが浮かんだら、名前をつけてボタンをタップ。名前をつけると、思考と距離がとれます。";
+function migrateSteps(r) {
+  const preset = PRESETS.find((p) => p.id === r.id);
+  // v0.6で追加された「おわりかた」（夜ルーティンはそのまま眠る、が初期値）
+  if (r.end === undefined) r.end = (preset && preset.end) || "chime";
+  r.steps.forEach((st) => {
+    if (st.type === "label" && st.guide === OLD_LABEL_GUIDE) {
+      const ps = PRESETS.find((p) => p.id === "reset").steps[1];
+      st.guide = ps.guide;
+      if (st.name === "ラベリング") st.name = ps.name;
+    }
+    // 環境音が未導入時代のデータには、プリセットと同名ステップの環境音を補う
+    if (st.sound === undefined && preset) {
+      const match = preset.steps.find((p) => p.name === st.name && p.type === st.type);
+      if (match && match.sound) st.sound = match.sound;
+    }
+  });
+}
+function loadData() {
+  try {
+    const s = JSON.parse(localStorage.getItem("ru-routines"));
+    if (s && s.v === 2 && Array.isArray(s.list)) {
+      s.list.forEach(migrateSteps);
+      return s;
+    }
+    // 旧形式（morning/miracle/night/reset のオブジェクト）からの移行
+    if (s && typeof s === "object" && (s.morning || s.night || s.reset)) {
+      const list = PRESETS.map((p) => {
+        const old = s[p.id];
+        if (!old || !Array.isArray(old.steps)) return clone(p);
+        const r = { id: p.id, title: old.title || p.title, icon: p.icon, theme: old.theme ?? p.theme, doneMsg: old.doneMsg || p.doneMsg, steps: old.steps };
+        migrateSteps(r);
+        return r;
+      });
+      return { v: 2, list };
+    }
+  } catch (e) { /* 壊れていたら初期値に戻す */ }
+  return { v: 2, list: clone(PRESETS) };
+}
+let data = loadData();
+const persist = () => localStorage.setItem("ru-routines", JSON.stringify(data));
+const byId = (id) => data.list.find((r) => r.id === id);
+
+/* ===== 記録（localStorage） 表示はしない・データだけ残す ===== */
+function saveDone(id) {
+  const log = JSON.parse(localStorage.getItem("ru-log") || "{}");
+  const t = todayKey();
+  log[t] = log[t] || [];
+  if (!log[t].includes(id)) log[t].push(id);
+  localStorage.setItem("ru-log", JSON.stringify(log));
+}
+
+/* ===== サウンド（すべてWeb Audioで合成・音源ファイル不要）===== */
+let audioCtx;
+function ensureCtx() {
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function chime() {
+  try {
+    const ctx = ensureCtx();
+    [[659.3, 0], [880, 0.28]].forEach(([f, delay]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = f; o.type = "sine";
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+      g.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + delay + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 1.2);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + delay);
+      o.stop(ctx.currentTime + delay + 1.3);
+    });
+  } catch (e) { /* 無音でOK */ }
+}
+/* カウントダウン音（3・2・1） */
+function countdownCue() {
+  try {
+    const ctx = ensureCtx();
+    const beep = (delay) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 587.33; // D5（少し低め）
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+      g.gain.exponentialRampToValueAtTime(0.07, ctx.currentTime + delay + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.35);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + delay);
+      o.stop(ctx.currentTime + delay + 0.4);
+    };
+    beep(0);      // 3
+    beep(0.5);    // 2
+    beep(1.0);    // 1
+  } catch (e) { /* 無音でOK */ }
+}
+/* アクション開始の合図（さりげない一音） */
+function startCue() {
+  try {
+    const ctx = ensureCtx();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 523.25; // C5
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.09, ctx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+    o.connect(g).connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime + 0.65);
+  } catch (e) { /* 無音でOK */ }
+}
+function popSound() {
+  try {
+    const ctx = ensureCtx();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 520 + Math.random() * 180;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.13);
+    o.connect(g).connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime + 0.15);
+  } catch (e) { /* 無音でOK */ }
+}
+
+/* 環境音エンジン */
+let amb = null;
+let noiseBuf = null;
+function getNoise(ctx) {
+  if (noiseBuf) return noiseBuf;
+  const len = ctx.sampleRate * 2;
+  noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const ch = noiseBuf.getChannelData(0);
+  for (let i = 0; i < len; i++) ch[i] = Math.random() * 2 - 1;
+  return noiseBuf;
+}
+function stopAmbient() {
+  if (!amb) return;
+  const a = amb; amb = null;
+  try {
+    a.master.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.15);
+  } catch (e) {}
+  if (a.interval) clearInterval(a.interval);
+  setTimeout(() => a.nodes.forEach((n) => {
+    try { n.stop && n.stop(); } catch (e) {}
+    try { n.disconnect(); } catch (e) {}
+  }), 600);
+}
+function startAmbient(kind) {
+  stopAmbient();
+  ambPaused = false;
+  if (!kind) return;
+  try {
+    const ctx = ensureCtx();
+    const master = ctx.createGain();
+    master.gain.value = 0.0001;
+    master.connect(ctx.destination);
+    const nodes = [master];
+    let level = 0.08;
+    let interval = null;
+
+    if (kind === "beat") {
+      // 動きたくなるグルーヴ（120bpm・キック/ハット/クラップ/ベース）
+      level = 0.45;
+      const eighth = 0.25; // 8分音符 = 250ms
+      const bassA = [110, 0, 110, 165, 0, 131, 165, 0];
+      const bassB = [110, 0, 110, 165, 0, 196, 165, 131];
+      const kick = (t) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.setValueAtTime(150, t);
+        o.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.9, t + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+        o.connect(g).connect(master);
+        o.start(t); o.stop(t + 0.25);
+      };
+      const hat = (t, hi) => {
+        const s = ctx.createBufferSource(); s.buffer = getNoise(ctx);
+        const f = ctx.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 6500;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(hi ? 0.15 : 0.07, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+        s.connect(f).connect(g).connect(master);
+        s.start(t); s.stop(t + 0.07);
+      };
+      const clap = (t) => {
+        const s = ctx.createBufferSource(); s.buffer = getNoise(ctx);
+        const f = ctx.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 1600; f.Q.value = 1;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.32, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+        s.connect(f).connect(g).connect(master);
+        s.start(t); s.stop(t + 0.15);
+      };
+      const bass = (t, fq) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = "triangle"; o.frequency.value = fq;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.4, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+        o.connect(g).connect(master);
+        o.start(t); o.stop(t + 0.22);
+      };
+      const pluck = (t, fq) => {
+        const o = ctx.createOscillator();
+        const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 2200;
+        const g = ctx.createGain();
+        o.type = "square"; o.frequency.value = fq;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.11, t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+        o.connect(f).connect(g).connect(master);
+        o.start(t); o.stop(t + 0.18);
+      };
+      let bar = 0;
+      let nextBar = ctx.currentTime + 0.08;
+      const scheduleBar = (t0, b) => {
+        const bp = b % 2 ? bassB : bassA;
+        for (let i = 0; i < 8; i++) {
+          const t = t0 + i * eighth;
+          hat(t, i % 2 === 0);
+          if (i === 0 || i === 4) kick(t);
+          if (i === 2 || i === 6) clap(t);
+          if (bp[i]) bass(t, bp[i]);
+        }
+        // 4小節ごとに小さなフィル（上がるピコピコ）
+        if (b % 4 === 3) { pluck(t0 + 6 * eighth, 440); pluck(t0 + 7 * eighth, 523.3); }
+      };
+      // 1小節ずつ先読みでスケジュールしてテンポのヨレを防ぐ
+      const pump = () => { while (nextBar < ctx.currentTime + 2.2) { scheduleBar(nextBar, bar++); nextBar += eighth * 8; } };
+      pump();
+      interval = setInterval(pump, 700);
+    } else if (kind === "bowl") {
+      // クリスタルボウル：わずかにずらした純音2本で「うなり」を作り、
+      // 倍音のきらめきと、ときどきのやわらかい打音（長い余韻）を重ねる
+      level = 0.14;
+      const mk = (fq, g0) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = "sine"; o.frequency.value = fq;
+        g.gain.value = g0;
+        o.connect(g).connect(master);
+        o.start();
+        nodes.push(o, g);
+      };
+      mk(220, 0.5); mk(220.8, 0.5);   // 基音ペア（約0.8Hzのうなり）
+      mk(440, 0.12); mk(659.2, 0.05); // 倍音のきらめき
+      // ゆっくりした息づかいのようなうねり
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.05;
+      const depth = ctx.createGain(); depth.gain.value = 0.04;
+      lfo.connect(depth).connect(master.gain);
+      lfo.start();
+      nodes.push(lfo, depth);
+      // 13秒ごとにやわらかい打音（余韻10秒・音程は3つを巡回）
+      const strikeNotes = [220, 246.9, 293.7];
+      let ni = 0;
+      const strike = () => {
+        if (!amb || amb.master !== master) return;
+        const fq = strikeNotes[ni++ % strikeNotes.length];
+        [[fq, 0.5], [fq * 2, 0.15]].forEach(([f, g0]) => {
+          const o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = "sine"; o.frequency.value = f + Math.random() * 0.6;
+          g.gain.setValueAtTime(0.0001, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(g0, ctx.currentTime + 0.35);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 10);
+          o.connect(g).connect(master);
+          o.start(); o.stop(ctx.currentTime + 10.5);
+        });
+      };
+      setTimeout(strike, 600); // 最初のひと鳴らし
+      interval = setInterval(strike, 13000);
+    } else {
+      const src = ctx.createBufferSource();
+      src.buffer = getNoise(ctx);
+      src.loop = true;
+      nodes.push(src);
+      if (kind === "rain") {
+        const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 400;
+        const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2400;
+        src.connect(hp).connect(lp).connect(master);
+        nodes.push(hp, lp);
+        level = 0.05;
+      } else if (kind === "waves") {
+        const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 480;
+        src.connect(lp).connect(master);
+        // ゆっくり寄せては返すうねり
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 0.08;
+        const depth = ctx.createGain(); depth.gain.value = 0.055;
+        lfo.connect(depth).connect(master.gain);
+        lfo.start();
+        nodes.push(lp, lfo, depth);
+        level = 0.075;
+      } else if (kind === "wind") {
+        const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 340; bp.Q.value = 1.1;
+        src.connect(bp).connect(master);
+        // 風の強弱（フィルタ周波数がゆっくり揺れる）
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 0.06;
+        const depth = ctx.createGain(); depth.gain.value = 160;
+        lfo.connect(depth).connect(bp.frequency);
+        lfo.start();
+        nodes.push(bp, lfo, depth);
+        level = 0.09;
+      }
+      src.start();
+    }
+    master.gain.setTargetAtTime(level, ctx.currentTime, 0.6);
+    amb = { master, nodes, interval, level };
+    applyAmbientLevel();
+  } catch (e) { /* 音が出せない環境では無音のまま */ }
+}
+let ambPaused = false;
+function applyAmbientLevel() {
+  if (!amb) return;
+  const duck = speakCount > 0 ? 0.25 : 1; // 読み上げ中は環境音を下げる
+  const target = ambPaused ? 0.0001 : amb.level * duck;
+  try { amb.master.gain.setTargetAtTime(target, audioCtx.currentTime, 0.25); } catch (e) {}
+}
+function setAmbientPaused(paused) { ambPaused = paused; applyAmbientLevel(); }
+/* おやすみ終了用：環境音を1分ほどかけてゆっくり消す */
+function fadeAmbientSlow() {
+  if (!amb) return;
+  const a = amb; amb = null;
+  try { a.master.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 12); } catch (e) {}
+  if (a.interval) clearInterval(a.interval);
+  setTimeout(() => a.nodes.forEach((n) => {
+    try { n.stop && n.stop(); } catch (e) {}
+    try { n.disconnect(); } catch (e) {}
+  }), 55000);
+}
+
+/* ===== 音声ガイド =====
+   voice/manifest.json（VOICEVOX等で事前生成した音声ファイルの一覧）があればそれを再生し、
+   ない文章は端末内蔵の音声合成（Web Speech API）で読み上げる */
+let voiceOn = localStorage.getItem("ru-voice") !== "0";
+let speakCount = 0;
+let voiceFiles = {};                 // テキスト → 音声ファイルパス
+const voiceAudio = new Audio();      // ファイル再生用（1個を使い回す）
+let speechQueue = [];
+let speechBusy = false;
+
+function loadVoiceManifest() {
+  fetch("voice/manifest.json")
+    .then((r) => (r.ok ? r.json() : null))
+    .then((m) => { if (m && typeof m === "object") { voiceFiles = m; updateVoiceBtn(); } })
+    .catch(() => { /* 未生成・file://直開きの場合は端末の音声合成を使う */ });
+}
+
+function cancelSpeech() {
+  speechQueue = [];
+  speechBusy = false;
+  try { window.speechSynthesis && speechSynthesis.cancel(); } catch (e) {}
+  try { voiceAudio.onended = null; voiceAudio.onerror = null; voiceAudio.pause(); } catch (e) {}
+  speakCount = 0;
+  applyAmbientLevel();
+}
+
+function speak(text, rate, onDone) {
+  if (!voiceOn || !text) { if (onDone) onDone(); return; }
+  speechQueue.push({ text, rate: rate || 0.95, onDone });
+  pumpSpeech();
+}
+
+function pumpSpeech() {
+  if (speechBusy || !speechQueue.length) return;
+  const item = speechQueue.shift();
+  speechBusy = true;
+  speakCount++; applyAmbientLevel();
+  let finished = false;
+  const done = () => {
+    if (finished) return;
+    finished = true;
+    speakCount = Math.max(0, speakCount - 1); applyAmbientLevel();
+    speechBusy = false;
+    if (item.onDone) item.onDone();
+    pumpSpeech();
+  };
+  const ttsPlay = () => {
+    if (finished) return;
+    if (!("speechSynthesis" in window)) { done(); return; }
+    try {
+      const u = new SpeechSynthesisUtterance(item.text);
+      u.lang = "ja-JP";
+      const v = speechSynthesis.getVoices().find((x) => x.lang && x.lang.startsWith("ja"));
+      if (v) u.voice = v;
+      u.rate = item.rate;
+      u.onend = done; u.onerror = done;
+      speechSynthesis.speak(u);
+    } catch (e) { done(); }
+  };
+  const file = voiceFiles[item.text];
+  if (file) {
+    voiceAudio.onended = done;
+    voiceAudio.onerror = ttsPlay;
+    try { voiceAudio.src = file; voiceAudio.play().catch(ttsPlay); } catch (e) { ttsPlay(); }
+  } else {
+    ttsPlay();
+  }
+}
+
+/* 読み上げ（複数パートも可）が終わってからcbを実行。OFFや非対応環境では即実行 */
+function speakThen(textOrParts, cb) {
+  const parts = (Array.isArray(textOrParts) ? textOrParts : [textOrParts]).filter(Boolean);
+  const total = parts.join("").length;
+  let called = false;
+  const once = () => { if (called) return; called = true; cb(); };
+  if (!voiceOn || !total) { once(); return; }
+  parts.forEach((p, i) => speak(p, 0.95, i === parts.length - 1 ? once : null));
+  // 終了イベントが届かない環境向けの保険（読み上げ時間を文字数から概算）
+  setTimeout(once, Math.min(30000, 2000 + total * 280));
+}
+
+/* ===== 画面スリープ防止（実行中だけ）===== */
+let wakeLock = null;
+async function requestWake() {
+  try { if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen"); } catch (e) {}
+}
+function releaseWake() {
+  try { wakeLock && wakeLock.release(); } catch (e) {}
+  wakeLock = null;
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && cur && $("#screen-step").classList.contains("active")) requestWake();
+});
+
+/* ===== 画面切り替え ===== */
+function show(id) {
+  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+function setTheme(theme) {
+  document.body.className = theme === "night" ? "theme-night" : theme === "morning" ? "theme-morning" : "";
+  document.querySelectorAll(".star").forEach((s) => s.remove());
+  if (theme === "night") {
+    for (let i = 0; i < 24; i++) {
+      const st = document.createElement("span");
+      st.className = "star";
+      st.style.left = Math.random() * 100 + "vw";
+      st.style.top = Math.random() * 100 + "vh";
+      st.style.animationDelay = Math.random() * 3 + "s";
+      document.body.appendChild(st);
+    }
+  }
+}
+/* ===== YouTubeプレーヤー（終了を検知して自動で次へ）===== */
+let ytPlayer = null, ytReady = false, ytPendingAttach = false;
+function loadYTApi() {
+  if (window.YT || document.getElementById("yt-api")) return;
+  const s = document.createElement("script");
+  s.id = "yt-api";
+  s.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(s);
+}
+window.onYouTubeIframeAPIReady = () => {
+  ytReady = true;
+  if (ytPendingAttach) { ytPendingAttach = false; attachYT(); }
+};
+function attachYT() {
+  if (ytPlayer || !$("#yt-frame").src) return;
+  try { ytPlayer = new YT.Player("yt-frame", { events: { onStateChange: onYTState } }); } catch (e) {}
+}
+function onYTState(e) {
+  if (!cur || !$("#screen-step").classList.contains("active")) return;
+  const step = cur.routine.steps[cur.index];
+  // 時間指定なしの動画ステップは、動画が終わった瞬間に自動で次へ
+  if (step && step.type === "video" && !step.sec && e.data === 0 /* ENDED */) finishStep(true);
+}
+function playVideoById(id) {
+  loadYTApi();
+  if (ytPlayer) {
+    try { ytPlayer.loadVideoById(id); return; } catch (e) { ytPlayer = null; }
+  }
+  $("#yt-frame").src = `https://www.youtube-nocookie.com/embed/${id}?rel=0&enablejsapi=1&playsinline=1&autoplay=1`;
+  if (ytReady) attachYT();
+  else ytPendingAttach = true;
+}
+const stopVideo = () => {
+  if (ytPlayer) { try { ytPlayer.stopVideo(); } catch (e) {} }
+  else $("#yt-frame").src = "";
+};
+
+/* ===== ホーム ===== */
+let reorderMode = false;
+
+function timeLabel(r) {
+  const total = r.steps.reduce((a, s) => a + (s.sec || 0), 0);
+  const hasManualVideo = r.steps.some((s) => s.type === "video" && !s.sec);
+  let out = total ? `約${Math.max(1, Math.round(total / 60))}分` : "";
+  if (hasManualVideo) out += (out ? " ＋ " : "") + "動画";
+  return out || "—";
+}
+function renderCards() {
+  $("#card-list").innerHTML = data.list.map((r, i) => `
+    <div class="card" data-id="${r.id}">
+      <span class="icon icon-${esc(r.icon || "leaf")}">${ICONS[r.icon] || ICONS.leaf}</span>
+      <span class="card-body">
+        <h2>${esc(r.title)}</h2>
+        <p>${esc(r.steps.map((s) => s.name).join(" → ") || "ステップがありません")}</p>
+        <span class="card-min">${timeLabel(r)}</span>
+      </span>
+      ${reorderMode
+        ? `<span class="card-move">
+             <button data-move="up" data-id="${r.id}" ${i === 0 ? "disabled" : ""}>↑</button>
+             <button data-move="down" data-id="${r.id}" ${i === data.list.length - 1 ? "disabled" : ""}>↓</button>
+           </span>`
+        : `<button class="card-edit" data-edit="${r.id}" aria-label="${esc(r.title)}を編集">${PENCIL}</button>`}
+    </div>`).join("");
+  $("#btn-reorder").textContent = reorderMode ? "完了" : "並べ替え";
+  $("#btn-reorder").classList.toggle("on", reorderMode);
+}
+function renderHome() {
+  setTheme("");
+  stopVideo();
+  stopAmbient();
+  cancelSpeech();
+  releaseWake();
+  const now = new Date();
+  $("#home-date").textContent = now.toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "long" });
+  const h = now.getHours();
+  $("#home-greeting").textContent = h < 4 ? "おつかれさま、ボス" : h < 11 ? "おはよう、ボス" : h < 18 ? "こんにちは、ボス" : "こんばんは、ボス";
+  renderCards();
+  show("#screen-home");
+}
+
+/* ===== ステップ進行 ===== */
+let cur = null;      // { id, routine, index, cardLines, cardIdx }
+let timer = null;    // { total, remaining, last, paused, id }
+let stepToken = 0;   // 読み上げ後の開始処理が古いステップで発火しないための世代カウンタ
+
+function startRoutine(id) {
+  const r = byId(id);
+  if (!r || !r.steps.length) return;
+  cur = { id, routine: r, index: 0 };
+  setTheme(r.theme);
+  show("#screen-step");
+  requestWake();
+  cancelSpeech();
+  speak(`${r.title}を始めます。`);
+  renderStep();
+}
+
+function renderStep() {
+  const { routine, index } = cur;
+  const step = routine.steps[index];
+  stopVideo();
+  $("#step-label").textContent = `${routine.title}　STEP ${index + 1} / ${routine.steps.length}`;
+  $("#step-title").textContent = step.name;
+  $("#step-guide").textContent = step.guide || "";
+  $("#step-sound").textContent = step.sound && step.type !== "video" ? `♪ 環境音：${SOUND_NAMES[step.sound] || ""}` : "";
+  $("#step-dots").innerHTML = routine.steps.map((_, i) => `<span class="${i <= index ? "on" : ""}"></span>`).join("");
+
+  ["#stage-timer", "#stage-label", "#stage-breath", "#stage-video", "#stage-cards", "#stage-write"].forEach((s) => { $(s).style.display = "none"; });
+  $("#btn-pause").style.display = "";
+  cur.breathPhase = "";
+  const token = ++stepToken;
+  stopTimer();
+
+  // まずステージを「待機状態」で表示（アクションは読み上げ後に開始）
+  if (step.type === "cards") {
+    $("#stage-cards").style.display = "block";
+    cur.cardLines = (step.lines || []).map((t) => String(t).trim()).filter(Boolean);
+    if (!cur.cardLines.length) cur.cardLines = ["（編集画面でこのステップに文章を追加できます）"];
+    cur.cardIdx = -1;
+    $("#card-text").textContent = cur.cardLines[0];
+    $("#card-pos").textContent = `1 / ${cur.cardLines.length}`;
+    $("#card-time").textContent = "";
+  } else if (step.type === "write") {
+    $("#stage-write").style.display = "block";
+    $("#write-thanks").value = "";
+    $("#write-focus").value = "";
+    $("#write-time").textContent = "";
+  } else if (step.type === "label") {
+    $("#stage-label").style.display = "block";
+    $("#label-count").innerHTML = "手放した考え <strong>0</strong> 個";
+    resetPurify();
+    $("#label-time").textContent = "";
+  } else if (step.type === "breath") {
+    $("#stage-breath").style.display = "block";
+    $("#breath-circle").style.animationPlayState = "paused";
+  } else if (step.type === "video") {
+    $("#stage-video").style.display = "block";
+    const id = ytId(step.video);
+    $("#video-error").style.display = id ? "none" : "block";
+    $(".video-wrap").style.display = id ? "" : "none";
+    $("#video-fallback").style.display = id ? "" : "none";
+    if (id) $("#video-open").href = `https://www.youtube.com/watch?v=${id}`;
+    if (!step.sec) {
+      $("#btn-pause").style.display = "none";
+      $("#video-note").textContent = "動画が終わると、自動で次へ進みます";
+    }
+  } else {
+    $("#stage-timer").style.display = "block";
+    $("#time-text").textContent = fmt(step.sec || 60);
+    $("#ring-bar").style.strokeDashoffset = 0;
+  }
+
+  // 環境音（動画ステップでは動画の音を優先）
+  if (step.type !== "video" && step.sound) startAmbient(step.sound);
+  else stopAmbient();
+
+  // 読み上げ → 終わってからアクション開始（タイマー・動画・呼吸）
+  const begin = () => {
+    if (token !== stepToken || !cur || !$("#screen-step").classList.contains("active")) return;
+    countdownCue(); // カウントダウン（3・2・1）
+    setTimeout(() => {
+      if (token !== stepToken || !cur || !$("#screen-step").classList.contains("active")) return;
+      startCue(); // スタートの合図
+      if (step.type === "video") {
+        const id = ytId(step.video);
+        if (id) playVideoById(id);
+        if (step.sec) startTimer(step.sec);
+      } else if (step.type === "breath") {
+        $("#breath-circle").style.animationPlayState = "running";
+        startTimer(step.sec || 30);
+      } else if (step.type === "label") {
+        startTimer(step.sec || 120);
+      } else {
+        startTimer(step.sec || 60);
+      }
+    }, 1500); // 3・2・1（0.5秒間隔）が鳴り終わってからスタート
+  };
+  // 「ステップN、」と本文を分けておくと、並べ替えても音声ファイルがそのまま使える
+  const introBody = step.type === "video" ? `${step.name}。` : `${step.name}。${step.guide || ""}`.trim();
+  speakThen([`ステップ${index + 1}、`, introBody], begin);
+}
+
+const CIRC = 2 * Math.PI * 103;
+$("#ring-bar").style.strokeDasharray = CIRC;
+
+function startTimer(sec) {
+  stopTimer();
+  timer = { total: sec, remaining: sec, last: Date.now(), paused: false, id: setInterval(tick, 200) };
+  $("#btn-pause").textContent = "一時停止";
+  tick();
+}
+function stopTimer() { if (timer) clearInterval(timer.id); timer = null; }
+
+function tick() {
+  if (!timer || !cur) return;
+  const now = Date.now();
+  if (!timer.paused) timer.remaining -= (now - timer.last) / 1000;
+  timer.last = now;
+  if (timer.remaining <= 0) { finishStep(true); return; }
+
+  const step = cur.routine.steps[cur.index];
+  if (step.type === "cards") {
+    const lines = cur.cardLines;
+    const seg = timer.total / lines.length;
+    const elapsed = timer.total - timer.remaining;
+    const idx = Math.min(lines.length - 1, Math.floor(elapsed / seg));
+    if (idx !== cur.cardIdx) {
+      cur.cardIdx = idx;
+      const el = $("#card-text");
+      el.textContent = lines[idx];
+      el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+      speak(lines[idx]);
+    }
+    $("#card-pos").textContent = `${idx + 1} / ${lines.length}`;
+    $("#card-time").textContent = "のこり " + fmt(timer.remaining);
+  } else if (step.type === "write") {
+    $("#write-time").textContent = "のこり " + fmt(timer.remaining);
+  } else if (step.type === "label") {
+    $("#label-time").textContent = "のこり " + fmt(timer.remaining);
+  } else if (step.type === "breath") {
+    const elapsed = timer.total - timer.remaining;
+    const totalCycles = Math.max(1, Math.round(timer.total / 10));
+    const phase = elapsed % 10 < 4 ? "吸って" : "吐いて";
+    if (phase !== cur.breathPhase) { cur.breathPhase = phase; speak(phase, 0.85); }
+    $("#breath-phase").textContent = phase === "吸って" ? "吸って …" : "吐いて ……";
+    $("#breath-cycle").textContent = `あと ${Math.max(1, totalCycles - Math.floor(elapsed / 10))} 回`;
+  } else if (step.type === "video") {
+    $("#video-note").textContent = "のこり " + fmt(timer.remaining);
+  } else {
+    $("#time-text").textContent = fmt(timer.remaining);
+    $("#ring-bar").style.strokeDashoffset = CIRC * (1 - timer.remaining / timer.total);
+  }
+}
+
+function finishStep(withChime) {
+  stopTimer();
+  cancelSpeech();
+  stepToken++; // 待機中の開始処理を無効化
+  const isLast = cur.index >= cur.routine.steps.length - 1;
+  const sleepEnd = isLast && cur.routine.end === "sleep";
+  if (withChime && !sleepEnd) chime();
+  // ライティングの内容は日付ごとに保存（あとで見返せるように）
+  const step = cur.routine.steps[cur.index];
+  if (step.type === "write") {
+    const thanks = $("#write-thanks").value.trim();
+    const focus = $("#write-focus").value.trim();
+    if (thanks || focus) {
+      const notes = JSON.parse(localStorage.getItem("ru-notes") || "{}");
+      notes[todayKey()] = { thanks, focus };
+      localStorage.setItem("ru-notes", JSON.stringify(notes));
+    }
+  }
+  if (!isLast) {
+    cur.index++;
+    renderStep();
+  } else if (sleepEnd) {
+    // おやすみ終了：チャイムなし・完了画面なし。音がゆっくり消えて、画面も自然に眠る
+    stopVideo();
+    saveDone(cur.id);
+    fadeAmbientSlow();
+    releaseWake();
+    setTheme("night");
+    show("#screen-sleep");
+    speak("おつかれさまでした。おやすみなさい。", 0.8);
+    cur = null;
+  } else {
+    stopVideo();
+    stopAmbient();
+    releaseWake();
+    saveDone(cur.id);
+    $("#done-icon").textContent = ICON_EMOJI[cur.routine.icon] || "🌿";
+    $("#done-msg").textContent = cur.routine.doneMsg || "おつかれさまでした。";
+    show("#screen-done");
+    speak(cur.routine.doneMsg || "おつかれさまでした。");
+  }
+}
+
+/* ===== 書いて浄化 ===== */
+let purifySpans = [];
+
+function resetPurify() {
+  purifySpans = [];
+  $("#purify-text").innerHTML = "";
+  $("#purify-text").style.display = "none";
+  const inp = $("#purify-input");
+  inp.value = "";
+  inp.style.display = "block";
+}
+
+$("#purify-btn").addEventListener("click", () => {
+  const inp = $("#purify-input");
+  const box = $("#purify-text");
+
+  // 1回目：入力欄の文章を浄化対象として表示に移す
+  if (!purifySpans.length) {
+    const text = inp.value.trim();
+    if (!text) {
+      inp.classList.remove("shake"); void inp.offsetWidth; inp.classList.add("shake");
+      inp.focus();
+      return;
+    }
+    box.innerHTML = "";
+    box.style.display = "block";
+    inp.style.display = "none";
+    inp.value = "";
+    [...text].forEach((ch) => {
+      const sp = document.createElement("span");
+      sp.className = "pchar";
+      sp.textContent = ch;
+      box.appendChild(sp);
+      purifySpans.push(sp);
+    });
+  }
+
+  // 押すたびに、残っている文字の一部が光になって飛んでいく
+  const alive = purifySpans.filter((s) => !s.classList.contains("gone"));
+  const n = Math.max(2, Math.ceil(alive.length * 0.28));
+  for (let i = 0; i < n && alive.length; i++) {
+    const sp = alive.splice(Math.floor(Math.random() * alive.length), 1)[0];
+    const r = sp.getBoundingClientRect();
+    const f = document.createElement("span");
+    f.className = "float-char";
+    f.textContent = sp.textContent;
+    f.style.left = r.left + "px";
+    f.style.top = r.top + "px";
+    f.style.setProperty("--dx", (Math.random() * 70 - 35).toFixed(0) + "px");
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 1500);
+    sp.classList.add("gone");
+  }
+  popSound();
+
+  // ぜんぶ消えたら1個カウントして次の考えへ
+  if (!alive.length) {
+    purifySpans = [];
+    setTimeout(() => {
+      const count = $("#label-count strong");
+      count.textContent = +count.textContent + 1;
+      box.innerHTML = '<span class="purify-done">🌿 ひとつ手放せました</span>';
+      setTimeout(() => { if (!purifySpans.length) resetPurify(); }, 1000);
+    }, 450);
+  }
+});
+
+$("#purify-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.isComposing) $("#purify-btn").click();
+});
+
+/* ===== 編集画面 ===== */
+let editId = null;   // null = 新規作成
+let draft = null;
+
+function openEdit(id) {
+  editId = id;
+  draft = id ? clone(byId(id)) : {
+    id: null, title: "新しいルーティン", icon: "leaf", theme: "",
+    doneMsg: "おつかれさまでした。",
+    steps: [{ name: "新しいステップ", sec: 60, type: "timer", guide: "" }],
+  };
+  setTheme("");
+  $("#edit-title").value = draft.title;
+  $("#edit-theme").value = draft.theme || "";
+  $("#edit-end").value = draft.end || "chime";
+  $("#edit-donemsg").value = draft.doneMsg || "";
+  $("#edit-reset").style.display = id && PRESETS.find((p) => p.id === id) ? "" : "none";
+  const del = $("#edit-delete");
+  del.style.display = id ? "" : "none";
+  del.classList.remove("arm");
+  del.textContent = "このルーティンを削除";
+  renderIconRow();
+  renderEditSteps();
+  show("#screen-edit");
+}
+
+function renderIconRow() {
+  $("#icon-row").innerHTML = Object.keys(ICONS).map((k) =>
+    `<button type="button" class="icon-pick icon-${k} ${draft.icon === k ? "sel" : ""}" data-icon="${k}" aria-label="${k}">${ICONS[k]}</button>`
+  ).join("");
+}
+
+function renderEditSteps() {
+  $("#edit-steps").innerHTML = draft.steps.map((s, i) => {
+    const type = s.type || "timer";
+    return `<div class="estep" data-i="${i}">
+      <div class="estep-head">
+        <span class="no">STEP ${i + 1}</span>
+        <button class="mini-btn" data-act="up" title="上へ" ${i === 0 ? "disabled" : ""}>↑</button>
+        <button class="mini-btn" data-act="down" title="下へ" ${i === draft.steps.length - 1 ? "disabled" : ""}>↓</button>
+        <button class="mini-btn" data-act="del" title="削除">✕</button>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>ステップ名</label>
+          <input type="text" data-f="name" value="${esc(s.name)}" maxlength="14">
+        </div>
+        <div class="field">
+          <label>種類</label>
+          <select data-f="type">${Object.entries(TYPE_NAMES).map(([v, t]) =>
+            `<option value="${v}" ${v === type ? "selected" : ""}>${t}</option>`).join("")}</select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>時間</label>
+          <div class="dur-inputs">
+            <input type="number" inputmode="numeric" min="0" max="99" data-f="min" value="${Math.floor((s.sec || 0) / 60)}"> 分
+            <input type="number" inputmode="numeric" min="0" max="59" data-f="s" value="${(s.sec || 0) % 60}"> 秒
+          </div>
+        </div>
+        ${type !== "video" ? `<div class="field">
+          <label>環境音</label>
+          <select data-f="sound">${Object.entries(SOUND_NAMES).map(([v, t]) =>
+            `<option value="${v}" ${(s.sound || "") === v ? "selected" : ""}>${t}</option>`).join("")}</select>
+        </div>` : ""}
+      </div>
+      ${type === "video" ? '<p class="hint">0分0秒にすると、動画が終わったタイミングで自動的に次へ進みます（スマホを触らなくてOK）</p>' : ""}
+      ${type === "video" ? `<div class="field">
+        <label>YouTubeのURL（貼り替えればいつでも更新できます）</label>
+        <input type="url" data-f="video" value="${esc(s.video || "")}" placeholder="https://www.youtube.com/watch?v=...">
+        ${s.video && !ytId(s.video) ? '<p class="hint">⚠ このURLからは動画が読み取れません</p>' : ""}
+      </div>` : ""}
+      ${type === "cards" ? `<div class="field">
+        <label>表示する文章（1行にひとつ・時間内で順番に切り替わります）</label>
+        <textarea data-f="lines" rows="4">${esc((s.lines || []).join("\n"))}</textarea>
+      </div>` : ""}
+      <div class="field">
+        <label>ガイド文</label>
+        <textarea data-f="guide" rows="2">${esc(s.guide || "")}</textarea>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function readDur(box) {
+  const min = +box.querySelector('[data-f="min"]').value || 0;
+  const s = +box.querySelector('[data-f="s"]').value || 0;
+  return Math.max(0, Math.min(99 * 60 + 59, min * 60 + s));
+}
+
+$("#edit-steps").addEventListener("input", (e) => {
+  const box = e.target.closest(".estep");
+  if (!box) return;
+  const step = draft.steps[+box.dataset.i];
+  const f = e.target.dataset.f;
+  if (f === "name") step.name = e.target.value;
+  if (f === "guide") step.guide = e.target.value;
+  if (f === "video") step.video = e.target.value.trim();
+  if (f === "lines") step.lines = e.target.value.split("\n");
+  if (f === "min" || f === "s") step.sec = readDur(box);
+});
+$("#edit-steps").addEventListener("change", (e) => {
+  const box = e.target.closest(".estep");
+  if (!box) return;
+  const step = draft.steps[+box.dataset.i];
+  const f = e.target.dataset.f;
+  if (f === "sound") step.sound = e.target.value;
+  if (f === "type") {
+    step.type = e.target.value;
+    if (step.type === "video" && step.video === undefined) step.video = "";
+    if (step.type === "cards" && !Array.isArray(step.lines)) step.lines = [];
+    renderEditSteps();
+  }
+});
+$("#edit-steps").addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-act]");
+  if (!btn) return;
+  const i = +btn.closest(".estep").dataset.i;
+  const act = btn.dataset.act;
+  if (act === "del") draft.steps.splice(i, 1);
+  if (act === "up" && i > 0) [draft.steps[i - 1], draft.steps[i]] = [draft.steps[i], draft.steps[i - 1]];
+  if (act === "down" && i < draft.steps.length - 1) [draft.steps[i + 1], draft.steps[i]] = [draft.steps[i], draft.steps[i + 1]];
+  renderEditSteps();
+});
+$("#icon-row").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-icon]");
+  if (!b) return;
+  draft.icon = b.dataset.icon;
+  renderIconRow();
+});
+$("#edit-add").addEventListener("click", () => {
+  draft.steps.push({ name: "新しいステップ", sec: 60, type: "timer", guide: "" });
+  renderEditSteps();
+});
+$("#edit-save").addEventListener("click", () => {
+  draft.title = $("#edit-title").value.trim() || "ルーティン";
+  draft.theme = $("#edit-theme").value;
+  draft.end = $("#edit-end").value;
+  draft.doneMsg = $("#edit-donemsg").value.trim() || "おつかれさまでした。";
+  draft.steps.forEach((s) => { if (!s.name.trim()) s.name = "ステップ"; });
+  if (editId) {
+    const i = data.list.findIndex((r) => r.id === editId);
+    data.list[i] = draft;
+  } else {
+    draft.id = newId();
+    data.list.push(draft);
+  }
+  persist();
+  renderHome();
+});
+$("#edit-cancel").addEventListener("click", renderHome);
+$("#edit-reset").addEventListener("click", () => {
+  const p = PRESETS.find((p) => p.id === editId);
+  if (!p) return;
+  draft = clone(p);
+  $("#edit-title").value = draft.title;
+  $("#edit-theme").value = draft.theme || "";
+  $("#edit-end").value = draft.end || "chime";
+  $("#edit-donemsg").value = draft.doneMsg || "";
+  renderIconRow();
+  renderEditSteps();
+});
+$("#edit-delete").addEventListener("click", (e) => {
+  const btn = e.currentTarget;
+  if (!btn.classList.contains("arm")) {
+    btn.classList.add("arm");
+    btn.textContent = "もう一度押すと削除します";
+    setTimeout(() => { btn.classList.remove("arm"); btn.textContent = "このルーティンを削除"; }, 3000);
+    return;
+  }
+  data.list = data.list.filter((r) => r.id !== editId);
+  persist();
+  renderHome();
+});
+
+/* ===== ホームの操作 ===== */
+$("#card-list").addEventListener("click", (e) => {
+  const move = e.target.closest("[data-move]");
+  if (move) {
+    const i = data.list.findIndex((r) => r.id === move.dataset.id);
+    const j = move.dataset.move === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= data.list.length) return;
+    [data.list[i], data.list[j]] = [data.list[j], data.list[i]];
+    persist();
+    renderCards();
+    return;
+  }
+  const edit = e.target.closest("[data-edit]");
+  if (edit) { openEdit(edit.dataset.edit); return; }
+  if (reorderMode) return;
+  const card = e.target.closest(".card");
+  if (card) startRoutine(card.dataset.id);
+});
+$("#btn-reorder").addEventListener("click", () => { reorderMode = !reorderMode; renderCards(); });
+$("#btn-add-routine").addEventListener("click", () => openEdit(null));
+$("#screen-sleep").addEventListener("click", renderHome);
+
+function updateVoiceBtn() {
+  const b = $("#btn-voice");
+  const hasFiles = Object.keys(voiceFiles).length > 0;
+  b.textContent = voiceOn ? (hasFiles ? "🎧 音声ガイド ON（VOICEVOX）" : "🎧 音声ガイド ON") : "🔇 音声ガイド OFF";
+  b.classList.toggle("off", !voiceOn);
+}
+$("#btn-voice").addEventListener("click", () => {
+  voiceOn = !voiceOn;
+  localStorage.setItem("ru-voice", voiceOn ? "1" : "0");
+  updateVoiceBtn();
+  if (voiceOn) speak("音声ガイドをオンにしました。");
+  else cancelSpeech();
+});
+updateVoiceBtn();
+
+/* 読み上げ対象の全テキストをJSONで書き出す（make_voice.py がこれを使って音声を一括生成する） */
+$("#btn-export-voice").addEventListener("click", () => {
+  const texts = new Set();
+  for (let i = 1; i <= 12; i++) texts.add(`ステップ${i}、`);
+  ["吸って", "吐いて", "おつかれさまでした。", "おつかれさまでした。おやすみなさい。", "音声ガイドをオンにしました。"]
+    .forEach((t) => texts.add(t));
+  data.list.forEach((r) => {
+    texts.add(`${r.title}を始めます。`);
+    if (r.doneMsg) texts.add(r.doneMsg);
+    r.steps.forEach((st) => {
+      texts.add(`${st.name}。`);
+      const body = `${st.name}。${st.guide || ""}`.trim();
+      if (body) texts.add(body);
+      (st.lines || []).forEach((l) => { const s = String(l).trim(); if (s) texts.add(s); });
+    });
+  });
+  const blob = new Blob([JSON.stringify([...texts], null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "voice-texts.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+loadVoiceManifest();
+
+$("#btn-skip").addEventListener("click", () => finishStep(false));
+$("#btn-quit").addEventListener("click", () => { stopTimer(); renderHome(); });
+$("#btn-home").addEventListener("click", renderHome);
+
+$("#btn-pause").addEventListener("click", () => {
+  if (!timer) return;
+  timer.paused = !timer.paused;
+  $("#btn-pause").textContent = timer.paused ? "再開する" : "一時停止";
+  $("#breath-circle").style.animationPlayState = timer.paused ? "paused" : "running";
+  setAmbientPaused(timer.paused);
+});
+
+renderHome();
+})();
+</script>
+</body>
+</html>
